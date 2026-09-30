@@ -1,0 +1,65 @@
+---
+description: Backend Laravel conventions for APIs, Form Requests, services, and Eloquent
+globs: backend/**/*.php
+alwaysApply: false
+---
+
+# Backend Laravel
+
+Apply when editing backend PHP/Laravel files. Prefer existing patterns in `backend/` over inventing new structure. Adapt paths if the app uses a standard Laravel layout (`app/`, `routes/`, `database/`).
+
+## Structure
+
+```text
+backend/
+├── app/
+│   ├── Http/Controllers/
+│   ├── Http/Requests/
+│   ├── Http/Resources/
+│   ├── Models/
+│   ├── Services/
+│   └── Repositories/   # optional; use if already established
+├── routes/
+├── database/migrations/
+└── tests/
+```
+
+## Layering
+
+- Controllers: transport, auth middleware, response mapping only.
+- Form Requests: validation and authorization at the boundary.
+- Services: business logic and workflows.
+- Models/Eloquent (or repositories): persistence.
+- API Resources: response shaping.
+- Do not put business logic or raw query building in controllers.
+
+## Conventions
+
+- Prefer dependency injection; avoid `new` for app services inside controllers.
+- Use Form Requests instead of inline `$request->validate()` when validation is non-trivial.
+- Prefer Eloquent relationships and query scopes; avoid N+1 (eager load).
+- Schema changes go through migrations only; do not edit production schema ad hoc.
+- Use policies/gates for authorization; reuse existing middleware.
+- Prefer queued jobs for slow/side-effect work (mail, webhooks, heavy processing).
+- Do not invent public API or schema changes without an explicit request.
+- Keep feature code cohesive; follow existing naming and folder layout.
+
+## Example
+
+```php
+// ❌ BAD — validation + DB + business rules in controller
+public function store(Request $request)
+{
+    $data = $request->validate(['email' => 'required|email']);
+    $user = User::create($data);
+    Mail::to($user)->send(new WelcomeMail($user));
+    return response()->json($user);
+}
+
+// ✅ GOOD — Form Request + service + resource
+public function store(StoreUserRequest $request, UserService $users)
+{
+    $user = $users->create($request->validated());
+    return new UserResource($user);
+}
+```

@@ -1,0 +1,66 @@
+---
+description: Frontend Angular conventions for components, services, modules, and templates
+globs: frontend/**/*.{component.ts,service.ts,module.ts,directive.ts,pipe.ts,guard.ts,interceptor.ts,html,scss}
+alwaysApply: false
+---
+
+# Frontend Angular
+
+Apply when editing frontend Angular files. Prefer existing patterns in `frontend/` over inventing new structure or state/networking stacks.
+
+## Structure
+
+```text
+frontend/src/app/
+├── core/                 # singleton services, guards, interceptors
+├── shared/               # shared components, pipes, directives
+├── features/<feature>/
+│   ├── components/
+│   ├── pages/            # or containers / routed components
+│   ├── services/
+│   ├── models/
+│   └── <feature>.routes.ts
+├── app.routes.ts
+└── app.config.ts         # or app.module.ts if NgModules are used
+```
+
+Adapt to standalone vs NgModule layout if one is already established.
+
+## Layering
+
+- Components/templates: presentation and user interaction only.
+- Routed pages/containers: compose child components; coordinate feature UI state.
+- Services: HTTP (`HttpClient`), API mapping, and shared feature logic.
+- Guards/interceptors: auth, cross-cutting request/response behavior.
+- Models: TypeScript interfaces/types for API and view models.
+
+## Conventions
+
+- Keep API calls in injectable services; do not call `HttpClient` from templates or presentational components.
+- Prefer reactive patterns already used in the app (`async` pipe, signals, or RxJS)—do not mix in a new approach without justification.
+- Reuse `shared/` and existing feature components before creating new ones.
+- Avoid fat components; move non-UI logic into services.
+- Keep business rules that must be trusted on the server.
+- Handle loading, success, empty, and error states where relevant.
+- Prefer strongly typed models; avoid `any`.
+- Follow existing styling approach (component SCSS, shared styles); do not invent a new CSS system.
+
+## Example
+
+```typescript
+// ❌ BAD — component performs HTTP directly
+@Component({ /* ... */ })
+export class UserCardComponent implements OnInit {
+  user?: User;
+  constructor(private http: HttpClient) {}
+  ngOnInit() {
+    this.http.get<User>('/api/user').subscribe(u => (this.user = u));
+  }
+}
+
+// ✅ GOOD — service owns HTTP; component renders
+@Component({ /* ... */ })
+export class UserCardComponent {
+  user = input.required<User>();
+}
+```

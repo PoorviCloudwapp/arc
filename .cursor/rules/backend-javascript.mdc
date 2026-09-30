@@ -1,0 +1,53 @@
+---
+description: Backend JavaScript conventions for APIs, modules, and data access
+globs: backend/**/*.{js,mjs,cjs}
+alwaysApply: false
+---
+
+# Backend JavaScript
+
+Apply when editing backend `.js` / `.mjs` / `.cjs` files. Prefer existing patterns in `backend/` over inventing new structure.
+
+## Structure
+
+```text
+backend/src/modules/<feature>/
+  <feature>.module.js
+  <feature>.controller.js
+  <feature>.service.js
+  <feature>.repository.js
+  dto/
+  types/
+```
+
+## Layering
+
+- Controllers/routes: transport, validation, auth guards, response mapping only.
+- Services: business logic and workflows.
+- Repositories: persistence only.
+- Do not put business logic or direct DB access in controllers.
+
+## Conventions
+
+- Use ES modules unless the file already uses CommonJS; match neighbors.
+- Prefer `async`/`await` over raw promise chains.
+- Reuse existing guards, middleware, exceptions, and utilities.
+- Keep modules cohesive; avoid circular dependencies.
+- Do not change DB schema without a migration when migrations are used.
+- Do not invent public API or schema changes without an explicit request.
+
+## Example
+
+```javascript
+// ❌ BAD — DB + business logic in controller
+async function createUser(req, res) {
+  const user = await db.users.insert(req.body);
+  res.json(user);
+}
+
+// ✅ GOOD — controller delegates to service
+async function createUser(req, res) {
+  const user = await userService.create(req.body);
+  res.status(201).json(user);
+}
+```

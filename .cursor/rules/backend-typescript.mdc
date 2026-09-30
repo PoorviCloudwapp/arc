@@ -1,0 +1,60 @@
+---
+description: Backend TypeScript conventions for typed APIs, modules, and data access
+globs: backend/**/*.{ts,mts,cts}
+alwaysApply: false
+---
+
+# Backend TypeScript
+
+Apply when editing backend `.ts` / `.mts` / `.cts` files. Prefer existing patterns in `backend/` over inventing new structure.
+
+## Structure
+
+```text
+backend/src/modules/<feature>/
+  <feature>.module.ts
+  <feature>.controller.ts
+  <feature>.service.ts
+  <feature>.repository.ts
+  dto/
+  types/
+```
+
+## Layering
+
+- Controllers/routes: transport, validation, auth guards, response mapping only.
+- Services: business logic and workflows.
+- Repositories: persistence only.
+- Do not put business logic or direct DB access in controllers.
+
+## Typing
+
+- Prefer explicit types on public service/repository methods and DTOs.
+- Use `unknown` over `any`; narrow before use.
+- Colocate request/response types under `dto/` or `types/`; reuse shared types.
+- Keep runtime validation at the boundary (controller/DTO); trust typed inputs inside services.
+
+## Conventions
+
+- Prefer `async`/`await` over raw promise chains.
+- Reuse existing guards, pipes, middleware, exceptions, and utilities.
+- Keep modules cohesive; avoid circular dependencies.
+- Do not change DB schema without a migration when migrations are used.
+- Do not invent public API or schema changes without an explicit request.
+
+## Example
+
+```typescript
+// ❌ BAD — untyped, DB in controller
+async function createUser(req: any, res: any) {
+  const user = await db.users.insert(req.body);
+  res.json(user);
+}
+
+// ✅ GOOD — typed DTO + service
+async function createUser(req: Request, res: Response) {
+  const input: CreateUserDto = req.body;
+  const user = await userService.create(input);
+  res.status(201).json(user);
+}
+```

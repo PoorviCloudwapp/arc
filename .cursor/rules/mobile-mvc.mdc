@@ -1,0 +1,49 @@
+---
+description: Mobile MVC conventions for models, views, controllers, and API usage
+globs: mobile/**/*.{dart,kt,kts,swift,ts,tsx,js,jsx}
+alwaysApply: false
+---
+
+# Mobile MVC
+
+Apply when editing files under `mobile/`. Use MVC inside the mobile folder. Prefer existing patterns over inventing new structure or state/networking stacks.
+
+## Structure
+
+```text
+mobile/
+├── models/          # data shapes, local entities, mappers
+├── views/           # screens, widgets, UI only
+├── controllers/     # UI orchestration, input handling, navigation triggers
+├── services/        # API / device / storage access
+├── navigation/      # routes and navigators (if present)
+└── utils/           # pure helpers
+```
+
+Adapt names to the actual framework (Flutter, React Native, native) if an established layout differs, but keep the MVC separation.
+
+## Layering
+
+- **Models**: data structures, parsing/mapping, local persistence shapes. No UI.
+- **Views**: presentation and user interaction widgets/screens only. No API calls.
+- **Controllers**: wire views to models/services; handle loading/error flow and navigation intents.
+- **Services**: HTTP, device APIs, secure storage — the only place for network calls.
+
+## Conventions
+
+- Reuse existing widgets/components and services.
+- Keep API calls in `services/`; never call the network from views.
+- Do not duplicate backend business rules on the client.
+- Handle offline, loading, empty, success, and error states where applicable.
+- Do not introduce a new state-management or networking pattern without justification.
+- Keep controllers thin: orchestrate, do not become a second backend.
+
+## Example
+
+```text
+// ❌ BAD — view fetches API and embeds business rules
+View -> fetch('/users') -> render
+
+// ✅ GOOD — MVC flow
+View -> Controller -> Service (API) -> Model -> Controller -> View
+```

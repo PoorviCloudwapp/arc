@@ -9,15 +9,15 @@ backend/
 └── src/
     ├── modules/
     │   └── <feature>/
-    │       ├── <feature>.module.ts
-    │       ├── <feature>.controller.ts
-    │       ├── <feature>.service.ts
-    │       ├── <feature>.repository.ts
+    │       ├── <feature>.module.js
+    │       ├── <feature>.controller.js
+    │       ├── <feature>.service.js
+    │       ├── <feature>.repository.js
     │       ├── dto/
     │       └── types/
     ├── common/
     ├── config/
-    └── main.ts
+    └── main.js
 ```
 
 Adapt names to the actual repository if an established structure differs.

@@ -1,0 +1,58 @@
+---
+description: Frontend React conventions for components, hooks, pages, and API services
+globs: frontend/**/*.{tsx,jsx}
+alwaysApply: false
+---
+
+# Frontend React
+
+Apply when editing frontend React (`.tsx` / `.jsx`) files. Prefer existing patterns in `frontend/` over inventing new structure or state/networking stacks.
+
+## Structure
+
+```text
+frontend/src/
+├── components/     # reusable UI
+├── pages/          # route-level screens
+├── hooks/          # reusable stateful logic
+├── services/       # API / integration layer
+├── utils/          # pure helpers
+├── types/          # shared contracts
+└── ...
+```
+
+## Layering
+
+- Components: presentation; accept props/callbacks; no direct API calls.
+- Pages: compose components; wire route params and page-level state.
+- Hooks: reusable client state and side-effect behavior.
+- Services: HTTP and external integrations only.
+
+## Conventions
+
+- Prefer function components; extract custom hooks for reusable stateful logic.
+- Reuse existing components before creating new ones.
+- Avoid large components; split when a piece has a clear single responsibility.
+- Keep API calls in `services/` (or established data hooks that call services)—not in presentational components.
+- Keep business rules that must be trusted on the server.
+- Handle loading, success, empty, and error states where relevant.
+- Do not introduce a new state-management or data-fetching library without justification.
+- Follow the repo's React patterns (e.g. Compiler guidance); do not add `useMemo`/`useCallback` by default unless already used.
+
+## Example
+
+```tsx
+// ❌ BAD — presentational component fetches
+function UserCard() {
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    fetch('/api/user').then(r => r.json()).then(setUser);
+  }, []);
+  return <div>{user?.name}</div>;
+}
+
+// ✅ GOOD — service + page/hook owns data; component renders
+function UserCard({ user }: { user: User }) {
+  return <div>{user.name}</div>;
+}
+```
